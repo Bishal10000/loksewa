@@ -1,0 +1,13 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/exams/page": "app/exams/page.js",
+  "/about/page": "app/about/page.js",
+  "/notes/page": "app/notes/page.js",
+  "/results/page": "app/results/page.js",
+  "/sitemap.xml/route": "app/sitemap.xml/route.js",
+  "/page": "app/page.js",
+  "/syllabus/page": "app/syllabus/page.js",
+  "/robots.txt/route": "app/robots.txt/route.js",
+  "/notes/[slug]/page": "app/notes/[slug]/page.js",
+  "/exams/[slug]/page": "app/exams/[slug]/page.js"
+}
