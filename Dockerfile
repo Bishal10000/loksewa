@@ -22,6 +22,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install PHP extensions
 RUN docker-php-ext-install mbstring pdo pdo_pgsql pgsql pcntl zip intl
 RUN ln -s /usr/local/bin/php /usr/bin/php
+ENV PATH="/usr/local/bin:${PATH}"
 
 # Xdebug
 # RUN pecl install xdebug \
