@@ -3,21 +3,11 @@ FROM php:8.4-fpm
 ENV PATH="/usr/local/bin:${PATH}"
 
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    zip \
-    unzip \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    libicu-dev \
-    nodejs \
-    npm \
+    git curl zip unzip libpng-dev libonig-dev libxml2-dev \
+    libzip-dev libicu-dev libpq-dev nodejs npm \
     && docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip intl \
     && ln -s /usr/local/bin/php /usr/bin/php \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
