@@ -11,7 +11,7 @@ const tiroDevanagari = Tiro_Devanagari_Hindi({ subsets: ['devanagari'], weight: 
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains-mono' });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://loksewa-pathshala.test'),
+  metadataBase: new URL('https://loksewa.qzz.io'),
   title: {
     default: 'LokSewa Pathshala',
     template: '%s | LokSewa Pathshala',
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'LokSewa Pathshala',
     description: 'Your civil service dream, our platform.',
-    url: 'https://loksewa-pathshala.test',
+    url: 'https://loksewa.qzz.io',
     siteName: 'LokSewa Pathshala',
     type: 'website',
   },

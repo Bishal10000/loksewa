@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 import { exams } from '@/data/exams';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://loksewa-pathshala.test';
+  const baseUrl = 'https://loksewa.qzz.io';
 
   return [
     { url: `${baseUrl}/`, lastModified: new Date() },
@@ -14,3 +14,4 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...exams.map((exam) => ({ url: `${baseUrl}/exams/${exam.slug}`, lastModified: new Date() })),
   ];
 }
+

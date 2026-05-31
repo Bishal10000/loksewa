@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: 'https://loksewa-pathshala.test/sitemap.xml',
+    sitemap: 'https://loksewa.qzz.io/sitemap.xml',
   };
 }
