@@ -3,6 +3,12 @@ import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { ExamExplorer } from '@/components/exam/ExamExplorer';
 import { exams } from '@/data/exams';
 
+export const metadata = {
+  title: 'Loksewa Exam Questions | Past Papers Nepal',
+  description: 'Loksewa past exam questions and answers for Nepal PSC preparation.',
+  keywords: 'loksewa exam questions, PSC past papers, loksewa questions Nepal',
+};
+
 export default function ExamsPage(): JSX.Element {
   return (
     <div className="space-y-8 py-20">

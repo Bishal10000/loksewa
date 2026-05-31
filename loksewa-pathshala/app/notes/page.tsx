@@ -3,6 +3,12 @@ import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { NotesExplorer } from '@/components/notes/NotesExplorer';
 import { notes } from '@/data/notes';
 
+export const metadata = {
+  title: 'Loksewa Notes | Free Study Materials Nepal',
+  description: 'Free Loksewa study notes for Nepal PSC exam. Download and read notes for all subjects.',
+  keywords: 'loksewa notes, loksewa study materials, PSC notes Nepal',
+};
+
 export default function NotesPage(): JSX.Element {
   return (
     <div className="space-y-8 py-20">

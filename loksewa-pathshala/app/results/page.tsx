@@ -3,6 +3,12 @@ import { ArrowUpRight, BellRing, Link2 } from 'lucide-react';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
+export const metadata = {
+  title: 'Loksewa Results | PSC Exam Results Nepal',
+  description: 'Latest Loksewa and PSC exam results in Nepal.',
+  keywords: 'loksewa results, PSC results Nepal, loksewa exam results',
+};
+
 const notices = [
   { title: 'PSC Results', href: 'https://psc.gov.np' },
   { title: 'Vacancy Notices', href: 'https://psc.gov.np' },

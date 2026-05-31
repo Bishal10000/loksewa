@@ -5,6 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { exams } from '@/data/exams';
 import { SyllabusAccordion } from '@/components/exam/SyllabusAccordion';
 
+export const metadata = {
+  title: 'Loksewa Syllabus 2081 | PSC Exam Syllabus Nepal',
+  description: 'Complete Loksewa syllabus for all PSC exams in Nepal. Updated 2081 syllabus.',
+  keywords: 'loksewa syllabus, PSC syllabus Nepal, loksewa syllabus 2081',
+};
+
 export default function SyllabusPage(): JSX.Element {
   return (
     <div className="space-y-8">

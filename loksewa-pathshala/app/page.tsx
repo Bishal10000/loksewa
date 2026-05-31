@@ -6,6 +6,12 @@ import { exams } from '@/data/exams';
 import Link from 'next/link';
 import { ArrowRight, BookMarked, Layers3, Sparkles } from 'lucide-react';
 
+export const metadata = {
+  title: 'Loksewa Notes Nepal | Free PSC Exam Preparation',
+  description: 'Free Loksewa notes, past questions, syllabus for Nepal PSC exam preparation.',
+  keywords: 'loksewa notes, PSC exam Nepal, loksewa preparation',
+};
+
 export default function HomePage(): JSX.Element {
   return (
     <div className="space-y-20">
