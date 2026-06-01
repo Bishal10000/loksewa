@@ -13,10 +13,10 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jet
 export const metadata: Metadata = {
   metadataBase: new URL('https://loksewa.qzz.io'),
   title: {
-    default: 'LokSewa Pathshala',
+    default: "LokSewa Pathshala - Nepal's Premier Loksewa Exam Preparation",
     template: '%s | LokSewa Pathshala',
   },
-  description: 'Premium Loksewa preparation platform for Nepal PSC exam aspirants with notes, syllabi, and exam explorers.',
+  description: 'Nepal ko best Loksewa preparation platform. Kharidar, Nayab Subba, Section Officer exam notes, syllabus, and past questions. PSC exam Nepal.',
   openGraph: {
     title: 'LokSewa Pathshala',
     description: 'Your civil service dream, our platform.',
