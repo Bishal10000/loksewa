@@ -11,35 +11,45 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        $validated = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|min:6',
-        ]);
+        try {
+            $validated = $request->validate([
+                'email' => 'required|email',
+                'password' => 'required|min:6',
+            ]);
 
-        $user = User::where('email', $validated['email'])->first();
+            $user = User::where('email', $validated['email'])->first();
 
-        if (! $user || ! Hash::check($validated['password'], $user->password)) {
+            if (! $user || ! Hash::check($validated['password'], $user->password)) {
+                return response()->json([
+                    'message' => 'Invalid credentials',
+                ], 401);
+            }
+
+            if ($user->role !== 'admin') {
+                return response()->json([
+                    'message' => 'Unauthorized. Admin access required.',
+                ], 403);
+            }
+
+            $token = Str::random(64);
+
+            $user->forceFill([
+                'api_token' => $token,
+            ])->save();
+
             return response()->json([
-                'message' => 'Invalid credentials',
-            ], 401);
-        }
+                'user' => $user,
+                'token' => $token,
+            ], 200);
+        } catch (\Throwable $e) {
+            logger()->error($e->getMessage() . "\n" . $e->getTraceAsString());
 
-        if ($user->role !== 'admin') {
+            $message = config('app.debug') ? $e->getMessage() : 'Server error';
+
             return response()->json([
-                'message' => 'Unauthorized. Admin access required.',
-            ], 403);
+                'message' => $message,
+            ], 500);
         }
-
-        $token = Str::random(64);
-
-        $user->forceFill([
-            'api_token' => $token,
-        ])->save();
-
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ], 200);
     }
 
     public function logout(Request $request)
