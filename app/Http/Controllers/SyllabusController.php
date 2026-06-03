@@ -33,8 +33,23 @@ class SyllabusController extends Controller
             'description' => 'nullable|string',
             'exam_slug' => 'required|string',
             'exam_name' => 'required|string',
+            'paper' => 'required|integer',
+            'paper_name' => 'required|string',
+            'chapters' => 'nullable',
             'file' => 'required|file|mimes:pdf|max:10240',
         ]);
+
+        $chapters = [];
+        $chaptersInput = $request->input('chapters', []);
+
+        if (is_array($chaptersInput)) {
+            $chapters = $chaptersInput;
+        } elseif (is_string($chaptersInput) && $chaptersInput !== '') {
+            $decodedChapters = json_decode($chaptersInput, true);
+            if (is_array($decodedChapters)) {
+                $chapters = $decodedChapters;
+            }
+        }
 
         // Store the file
         $filePath = null;
@@ -52,6 +67,9 @@ class SyllabusController extends Controller
             'description' => $validated['description'] ?? null,
             'exam_id' => $validated['exam_slug'],
             'exam_name' => $validated['exam_name'],
+            'paper' => $validated['paper'],
+            'paper_name' => $validated['paper_name'],
+            'chapters' => $chapters,
             'file_path' => $filePath,
             'file_url' => Storage::url($filePath),
         ]);
@@ -74,8 +92,21 @@ class SyllabusController extends Controller
             'description' => 'nullable|string',
             'exam_id' => 'string',
             'exam_name' => 'string',
+            'paper' => 'nullable|integer',
+            'paper_name' => 'nullable|string',
+            'chapters' => 'nullable',
             'file' => 'nullable|file|mimes:pdf|max:10240',
         ]);
+
+        if ($request->has('chapters')) {
+            $chapters = $request->input('chapters');
+            if (is_string($chapters)) {
+                $decodedChapters = json_decode($chapters, true);
+                $validated['chapters'] = is_array($decodedChapters) ? $decodedChapters : [];
+            } elseif (is_array($chapters)) {
+                $validated['chapters'] = $chapters;
+            }
+        }
 
         // If a new file is provided, store it and delete the old one
         if ($request->hasFile('file')) {

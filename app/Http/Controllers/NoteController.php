@@ -29,13 +29,41 @@ class NoteController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'title' => 'nullable|string',
             'description' => 'required|string',
             'category' => 'required|string',
             'exam_slugs' => 'nullable|string',
             'difficulty' => 'nullable|string',
+            'chapters' => 'nullable',
             'file' => 'required|file|mimes:pdf|max:10240',
             'color' => 'nullable|string',
         ]);
+
+        $examIds = 'all';
+        $examSlugsInput = $request->input('exam_slugs', 'all');
+
+        if (is_array($examSlugsInput)) {
+            $examIds = implode(',', $examSlugsInput);
+        } elseif (is_string($examSlugsInput) && $examSlugsInput !== '') {
+            $decodedExamSlugs = json_decode($examSlugsInput, true);
+            if (is_array($decodedExamSlugs)) {
+                $examIds = implode(',', $decodedExamSlugs);
+            } else {
+                $examIds = $examSlugsInput;
+            }
+        }
+
+        $chapters = [];
+        $chaptersInput = $request->input('chapters', []);
+
+        if (is_array($chaptersInput)) {
+            $chapters = $chaptersInput;
+        } elseif (is_string($chaptersInput) && $chaptersInput !== '') {
+            $decodedChapters = json_decode($chaptersInput, true);
+            if (is_array($decodedChapters)) {
+                $chapters = $decodedChapters;
+            }
+        }
 
         // Store the file
         $filePath = null;
@@ -47,16 +75,6 @@ class NoteController extends Controller
             ], 400);
         }
 
-        // Parse exam_slugs if provided
-        $examIds = 'all';
-        if (isset($validated['exam_slugs']) && ! empty($validated['exam_slugs'])) {
-            try {
-                $examIds = $validated['exam_slugs'];
-            } catch (\Exception $e) {
-                $examIds = 'all';
-            }
-        }
-
         // Parse difficulty
         $difficulty = 1;
         if (isset($validated['difficulty'])) {
@@ -66,11 +84,12 @@ class NoteController extends Controller
 
         // Create note with title from description (first 100 chars)
         $note = StudyNote::create([
-            'title' => substr($validated['description'], 0, 100),
+            'title' => $validated['title'] ?? substr($validated['description'], 0, 100),
             'description' => $validated['description'],
             'category' => $validated['category'],
             'exam_ids' => $examIds,
             'difficulty' => $difficulty,
+            'chapters' => $chapters,
             'file_path' => $filePath,
             'file_url' => Storage::url($filePath),
             'color' => $validated['color'] ?? '#DC143C',
@@ -96,9 +115,20 @@ class NoteController extends Controller
             'exam_ids' => 'nullable|string',
             'difficulty' => 'nullable|integer|min:1|max:5',
             'pages' => 'nullable|integer',
+            'chapters' => 'nullable',
             'file_url' => 'nullable|url',
             'color' => 'nullable|string',
         ]);
+
+        if ($request->has('chapters')) {
+            $chapters = $request->input('chapters');
+            if (is_string($chapters)) {
+                $decodedChapters = json_decode($chapters, true);
+                $validated['chapters'] = is_array($decodedChapters) ? $decodedChapters : [];
+            } elseif (is_array($chapters)) {
+                $validated['chapters'] = $chapters;
+            }
+        }
 
         $note->update($validated);
 

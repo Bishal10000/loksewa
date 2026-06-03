@@ -13,13 +13,18 @@ class Syllabus extends Model
         'description',
         'exam_id',
         'exam_name',
+        'paper',
+        'paper_name',
         'file_path',
         'file_url',
         'pages',
+        'chapters',
     ];
 
     protected $casts = [
+        'paper' => 'integer',
         'pages' => 'integer',
+        'chapters' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

@@ -18,11 +18,13 @@ class StudyNote extends Model
         'file_path',
         'file_url',
         'color',
+        'chapters',
     ];
 
     protected $casts = [
         'difficulty' => 'integer',
         'pages' => 'integer',
+        'chapters' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

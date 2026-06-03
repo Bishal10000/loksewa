@@ -4,6 +4,7 @@ import { LogOut, BookOpen, FileText, Upload, Check, AlertCircle, Trash2 } from '
 
 // Import exams data
 import { exams } from '../data/exams';
+import { fetchNotesFromApi, fetchSyllabiFromApi } from '../lib/contentApi';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -213,8 +214,44 @@ export default function AdminDashboard() {
   };
 
   const loadContent = () => {
-    setSyllabusList(readStoredCollection(syllabusStorageKey));
-    setNotesList(readStoredCollection(noteStorageKey));
+    const loadFromApi = async () => {
+      try {
+        const [syllabi, notes] = await Promise.all([fetchSyllabiFromApi(), fetchNotesFromApi()]);
+        setSyllabusList(syllabi);
+        setNotesList(notes);
+      } catch {
+        setSyllabusList(readStoredCollection(syllabusStorageKey));
+        setNotesList(readStoredCollection(noteStorageKey));
+      }
+    };
+
+    void loadFromApi();
+  };
+
+  const getAdminHeaders = () => {
+    const token = localStorage.getItem('admin_token');
+
+    return {
+      Accept: 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  };
+
+  const apiRequest = async (path, options = {}) => {
+    const response = await fetch(path, {
+      ...options,
+      headers: {
+        ...getAdminHeaders(),
+        ...(options.headers || {}),
+      },
+    });
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      throw new Error(payload.message || `Request failed with status ${response.status}`);
+    }
+
+    return response.json().catch(() => ({}));
   };
 
   const handleAddSyllabus = async (e) => {
@@ -236,44 +273,28 @@ export default function AdminDashboard() {
     setLoading(true);
 
     try {
-      console.log('📝 Converting file to base64...');
-      // Convert file to base64 for persistent storage
-      const fileUrl = await fileToBase64(syllabusForm.file);
-      console.log('✅ Base64 conversion successful, length:', fileUrl?.length);
-      
-      const updatedSyllabi = readStoredCollection(syllabusStorageKey).filter(
-        (item) => !(item.exam === syllabusForm.exam_slug && item.paper === parseInt(syllabusForm.paper_number, 10)),
-      );
-      const newSyllabus = {
-        id: `${syllabusForm.exam_slug}-${syllabusForm.paper_number}-${Date.now()}`,
-        exam: syllabusForm.exam_slug,
-        examName: selectedExam?.nameEnglish || '',
-        paper: parseInt(syllabusForm.paper_number, 10),
-        paperName: selectedPaper?.name || generateSyllabusTitle(),
-        service: 'all',
-        fileUrl,
-        uploadedAt: new Date().toISOString().slice(0, 10),
-        uploadedBy: 'admin',
-        description: syllabusForm.description.trim(),
-      };
-      
-      console.log('📋 New syllabus object created:', {
-        exam: newSyllabus.exam,
-        paper: newSyllabus.paper,
-        fileUrlStart: newSyllabus.fileUrl?.substring(0, 50)
+      const payload = new FormData();
+      const chapterPayload = Array.isArray(syllabusForm.chapters)
+        ? syllabusForm.chapters
+            .map((chapter, index) => ({ id: index + 1, title: chapter.trim() }))
+            .filter((chapter) => chapter.title)
+        : [];
+
+      payload.append('title', generateSyllabusTitle());
+      payload.append('exam_slug', syllabusForm.exam_slug);
+      payload.append('exam_name', selectedExam?.nameEnglish || '');
+      payload.append('paper', syllabusForm.paper_number);
+      payload.append('paper_name', selectedPaper?.name || generateSyllabusTitle());
+      payload.append('description', syllabusForm.description.trim());
+      payload.append('file', syllabusForm.file);
+      payload.append('chapters', JSON.stringify(chapterPayload));
+
+      await apiRequest('/api/syllabus', {
+        method: 'POST',
+        body: payload,
       });
 
-      updatedSyllabi.push(newSyllabus);
-      console.log('💾 About to write', updatedSyllabi.length, 'syllabi to localStorage');
-      
-      writeStoredCollection(syllabusStorageKey, updatedSyllabi);
-      console.log('✅ writeStoredCollection completed');
-      
-      // Verify it was saved
-      const saved = readStoredCollection(syllabusStorageKey);
-      console.log('✅ Verified:', saved.length, 'syllabi in localStorage');
-      
-      setSyllabusList(updatedSyllabi);
+      await loadContent();
       resetSyllabusForm();
       console.log('✅ handleAddSyllabus completed successfully');
     } catch (err) {
@@ -305,50 +326,30 @@ export default function AdminDashboard() {
     setLoading(true);
 
     try {
-      console.log('📝 Converting file to base64...');
-      // Convert file to base64 for persistent storage
-      const fileUrl = await fileToBase64(noteForm.file);
-      console.log('✅ Base64 conversion successful, length:', fileUrl?.length);
-      
       const selectedCategory = noteCategories.find((category) => category.value === noteForm.category);
       const chapters = noteForm.chapters
         .map((chapter, index) => ({ id: index + 1, title: chapter.trim() }))
         .filter((chapter) => chapter.title);
-      
-      const newNote = {
-        id: `${Date.now()}`,
-        title: noteForm.title.trim(),
-        category: noteForm.category,
-        categoryLabel: selectedCategory?.label || noteForm.category,
-        difficulty: noteForm.difficulty,
-        examSlugs: noteForm.exam_slugs,
-        applicableExams: noteForm.exam_slugs,
-        chapters,
-        fileUrl,
-        fileName: noteForm.file.name,
-        description: noteForm.description.trim(),
-        uploadedAt: new Date().toISOString().slice(0, 10),
-        uploadedBy: 'admin',
-      };
-      
-      console.log('📋 New note object created:', {
-        title: newNote.title,
-        examSlugs: newNote.examSlugs,
-        chapters: newNote.chapters.length,
-        fileUrlStart: newNote.fileUrl?.substring(0, 50)
+
+      const payload = new FormData();
+      payload.append('title', noteForm.title.trim());
+      payload.append('category', noteForm.category);
+      payload.append('difficulty', noteForm.difficulty);
+      payload.append('description', noteForm.description.trim());
+      payload.append('file', noteForm.file);
+      payload.append('exam_slugs', JSON.stringify(noteForm.exam_slugs));
+      payload.append('chapters', JSON.stringify(chapters));
+
+      if (selectedCategory) {
+        payload.append('category_label', selectedCategory.label);
+      }
+
+      await apiRequest('/api/notes', {
+        method: 'POST',
+        body: payload,
       });
 
-      const updatedNotes = [newNote, ...readStoredCollection(noteStorageKey)];
-      console.log('💾 About to write', updatedNotes.length, 'notes to localStorage');
-      
-      writeStoredCollection(noteStorageKey, updatedNotes);
-      console.log('✅ writeStoredCollection completed');
-      
-      // Verify it was saved
-      const saved = readStoredCollection(noteStorageKey);
-      console.log('✅ Verified:', saved.length, 'notes in localStorage');
-      
-      setNotesList(updatedNotes);
+      await loadContent();
       resetNoteForm();
       console.log('✅ handleAddNote completed successfully');
     } catch (err) {
@@ -363,25 +364,25 @@ export default function AdminDashboard() {
   const handleDeleteSyllabus = (id) => {
     if (!window.confirm('Delete this syllabus?')) return;
 
-    try {
-      const updatedSyllabi = readStoredCollection(syllabusStorageKey).filter((item) => item.id !== id);
-      writeStoredCollection(syllabusStorageKey, updatedSyllabi);
-      setSyllabusList(updatedSyllabi);
-    } catch (err) {
+    apiRequest(`/api/syllabus/${id}`, {
+      method: 'DELETE',
+    })
+      .then(() => loadContent())
+      .catch((err) => {
       console.error('Error deleting syllabus:', err);
-    }
+      });
   };
 
   const handleDeleteNote = (id) => {
     if (!window.confirm('Delete this note?')) return;
 
-    try {
-      const updatedNotes = readStoredCollection(noteStorageKey).filter((item) => item.id !== id);
-      writeStoredCollection(noteStorageKey, updatedNotes);
-      setNotesList(updatedNotes);
-    } catch (err) {
+    apiRequest(`/api/notes/${id}`, {
+      method: 'DELETE',
+    })
+      .then(() => loadContent())
+      .catch((err) => {
       console.error('Error deleting note:', err);
-    }
+      });
   };
 
   const handleLogout = () => {

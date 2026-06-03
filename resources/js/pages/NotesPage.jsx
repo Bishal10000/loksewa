@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FileText, ArrowLeft, BookOpen } from 'lucide-react';
 import { exams } from '../data/exams';
 import { openPdfInNewTab } from '../lib/pdf';
+import { fetchNotesFromApi } from '../lib/contentApi';
 
 export default function NotesPage() {
   const { examSlug } = useParams();
@@ -10,22 +11,24 @@ export default function NotesPage() {
   const [notes, setNotes] = useState([]);
   const [selectedExam, setSelectedExam] = useState(null);
 
-  const notesStorageKey = 'loksewa_notes';
-
   useEffect(() => {
-    // Load notes from localStorage
-    const stored = localStorage.getItem(notesStorageKey);
-    const allNotes = stored ? JSON.parse(stored) : [];
-    
-    if (examSlug) {
-      // Filter by exam slug
-      const filtered = allNotes.filter(n => n.examSlugs && n.examSlugs.includes(examSlug));
-      setNotes(filtered);
-      
-      // Set selected exam
-      const exam = exams.find(e => e.slug === examSlug);
-      setSelectedExam(exam);
-    }
+    const loadNotes = async () => {
+      if (examSlug) {
+        try {
+          const allNotes = await fetchNotesFromApi();
+          const filtered = allNotes.filter((note) => note.examSlugs && note.examSlugs.includes(examSlug));
+
+          setNotes(filtered);
+        } catch {
+          setNotes([]);
+        }
+
+        const exam = exams.find((item) => item.slug === examSlug);
+        setSelectedExam(exam);
+      }
+    };
+
+    void loadNotes();
   }, [examSlug]);
 
   const handleViewPDF = (fileUrl) => {

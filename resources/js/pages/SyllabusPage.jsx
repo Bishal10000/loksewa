@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { BookOpen, ArrowLeft, FileText } from 'lucide-react';
 import { exams } from '../data/exams';
 import { openPdfInNewTab } from '../lib/pdf';
+import { fetchSyllabiFromApi } from '../lib/contentApi';
 
 export default function SyllabusPage() {
   const { examSlug } = useParams();
@@ -10,22 +11,24 @@ export default function SyllabusPage() {
   const [syllabi, setSyllabi] = useState([]);
   const [selectedExam, setSelectedExam] = useState(null);
 
-  const syllabusStorageKey = 'loksewa_syllabi';
-
   useEffect(() => {
-    // Load syllabi from localStorage
-    const stored = localStorage.getItem(syllabusStorageKey);
-    const allSyllabi = stored ? JSON.parse(stored) : [];
-    
-    if (examSlug) {
-      // Filter by exam slug
-      const filtered = allSyllabi.filter(s => s.exam === examSlug);
-      setSyllabi(filtered);
-      
-      // Set selected exam
-      const exam = exams.find(e => e.slug === examSlug);
-      setSelectedExam(exam);
-    }
+    const loadSyllabi = async () => {
+      if (examSlug) {
+        try {
+          const allSyllabi = await fetchSyllabiFromApi();
+          const filtered = allSyllabi.filter((syllabus) => syllabus.exam === examSlug);
+
+          setSyllabi(filtered);
+        } catch {
+          setSyllabi([]);
+        }
+
+        const exam = exams.find((item) => item.slug === examSlug);
+        setSelectedExam(exam);
+      }
+    };
+
+    void loadSyllabi();
   }, [examSlug]);
 
   const handleViewPDF = (fileUrl) => {
