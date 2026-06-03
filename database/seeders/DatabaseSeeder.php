@@ -16,10 +16,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::updateOrCreate([
-            'email' => 'bishalaryal975@gmail.com',
+            'email' => 'admin@example.com',
         ], [
-            'name' => 'Bishal Aryal',
-            'password' => 'Bishal@10',
+            'name' => 'Admin User',
+            'password' => 'password',
             'role' => 'admin',
         ]);
     }
