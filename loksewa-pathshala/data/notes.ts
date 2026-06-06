@@ -21,6 +21,14 @@ export interface NoteItem {
   downloadHref: string;
 }
 
+export function slugifySegment(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 export const noteCategories: NoteCategory[] = [
   'GK',
   'Samwidhan',
@@ -149,4 +157,24 @@ export function getNotesByCategory(category?: string): NoteItem[] {
 
 export function getNoteBySlug(slug: string): NoteItem | undefined {
   return notes.find((note) => note.slug === slug);
+}
+
+export function getPrimaryNotePosition(note: Pick<NoteItem, 'applicableExams'>): string {
+  return note.applicableExams[0] ?? 'notes';
+}
+
+export function getNotePageHref(note: Pick<NoteItem, 'slug' | 'applicableExams'>, position?: string): string {
+  const resolvedPosition = position ?? getPrimaryNotePosition(note);
+
+  return `/notes/${slugifySegment(resolvedPosition)}/${slugifySegment(note.slug)}`;
+}
+
+export function getNoteByPositionAndSlug(position: string, slug: string): NoteItem | undefined {
+  const note = getNoteBySlug(slug);
+
+  if (!note) {
+    return undefined;
+  }
+
+  return note.applicableExams.includes(position) || getPrimaryNotePosition(note) === position ? note : undefined;
 }

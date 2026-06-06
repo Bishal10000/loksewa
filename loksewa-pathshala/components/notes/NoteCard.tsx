@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { BookOpen, Clock3, Sparkles } from 'lucide-react';
-import { NoteItem } from '@/data/notes';
+import { NoteItem, getNotePageHref } from '@/data/notes';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -10,8 +10,8 @@ const difficultyClass: Record<NoteItem['difficulty'], string> = {
   advanced: 'bg-rose-500/15 text-rose-200',
 };
 
-export function NoteCard({ note, isSample = false }: { note: NoteItem; isSample?: boolean }): JSX.Element {
-  const noteHref = note.slug.trim() ? `/notes/${note.slug}` : '/notes';
+export function NoteCard({ note, isSample = false, position }: { note: NoteItem; isSample?: boolean; position?: string }): JSX.Element {
+  const noteHref = getNotePageHref(note, position);
 
   return (
     <Card className="group h-full rounded-[14px] transition duration-300 hover:-translate-y-1 hover:shadow-glow">
@@ -21,7 +21,11 @@ export function NoteCard({ note, isSample = false }: { note: NoteItem; isSample?
           <span className={`rounded-full px-3 py-1 text-xs font-medium ${difficultyClass[note.difficulty]}`}>{note.difficulty}</span>
         </div>
         <div>
-          <CardTitle className="text-[17px] font-bold leading-[1.4] text-[#F9FAFB]">{note.titleNepali}</CardTitle>
+          <CardTitle className="text-[17px] font-bold leading-[1.4] text-[#F9FAFB]">
+            <Link className="transition hover:text-accent" href={noteHref}>
+              {note.titleNepali}
+            </Link>
+          </CardTitle>
           <CardDescription className="mt-2 text-[13px] leading-6 text-[#6B7280]">{note.titleEnglish}</CardDescription>
         </div>
       </CardHeader>

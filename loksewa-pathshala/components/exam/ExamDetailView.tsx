@@ -146,7 +146,7 @@ export function ExamDetailView({ exam, initialTab = 'overview' }: { exam: Exam; 
             <CardContent>
               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {relatedNotes.slice(0, 6).map((note) => (
-                    <NoteCard isSample key={note.slug} note={note} />
+                  <NoteCard isSample key={note.slug} note={note} position={exam.slug} />
                 ))}
               </div>
             </CardContent>

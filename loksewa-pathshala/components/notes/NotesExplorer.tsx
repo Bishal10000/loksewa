@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { FileText, Search, X } from 'lucide-react';
 import { FilterChip } from '@/components/ui/filter-chip';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { NoteCard } from './NoteCard';
 import { getUploadedNotes, type UploadedNoteRecord } from '@/lib/content-storage';
 import { notes as defaultSampleNotes, type NoteItem } from '@/data/notes';
+import { getUploadedNoteRoute } from '@/lib/note-routing';
 
 type SampleNote = NoteItem & { categorySlug: string };
 
@@ -95,8 +97,9 @@ function formatExamLabel(slug: string): string {
   return labels[slug] ?? slug;
 }
 
-function UploadedNoteCard({ note, onViewPdf }: { note: UploadedNoteRecord; onViewPdf: (note: UploadedNoteRecord) => void }): JSX.Element {
+function UploadedNoteCard({ note }: { note: UploadedNoteRecord }): JSX.Element {
   const exams = note.examSlugs ?? note.applicableExams ?? [];
+  const noteHref = getUploadedNoteRoute(note);
 
   return (
     <Card className="h-full rounded-[14px] border-white/10 bg-surface/90 transition duration-300 hover:-translate-y-1 hover:shadow-glow">
@@ -107,7 +110,11 @@ function UploadedNoteCard({ note, onViewPdf }: { note: UploadedNoteRecord; onVie
           <Badge className="border-none bg-white/10 text-muted">{difficultyLabelMap[note.difficulty]}</Badge>
         </div>
         <div>
-          <CardTitle className="text-[17px] font-bold leading-[1.4] text-[#F9FAFB]">{note.title}</CardTitle>
+          <CardTitle className="text-[17px] font-bold leading-[1.4] text-[#F9FAFB]">
+            <Link className="transition hover:text-accent" href={noteHref}>
+              {note.title}
+            </Link>
+          </CardTitle>
           <CardDescription className="mt-2 text-[13px] leading-6 text-[#6B7280]">{note.description || 'Uploaded study note'}</CardDescription>
         </div>
       </CardHeader>
@@ -120,44 +127,15 @@ function UploadedNoteCard({ note, onViewPdf }: { note: UploadedNoteRecord; onVie
           ))}
         </div>
 
-        <button
+        <Link
           className="mt-4 block w-full rounded-[8px] border border-[rgba(220,20,60,0.3)] bg-[rgba(220,20,60,0.1)] p-[11px] text-[13px] font-semibold text-[#DC143C] transition hover:bg-[rgba(220,20,60,0.2)]"
-          onClick={() => onViewPdf(note)}
-          type="button"
+          href={noteHref}
         >
           <FileText className="h-4 w-4" />
           View PDF
-        </button>
+        </Link>
       </CardContent>
     </Card>
-  );
-}
-
-function PdfModal({ note, onClose }: { note: UploadedNoteRecord; onClose: () => void }): JSX.Element {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4">
-      <div className="flex h-full w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#080C14] shadow-2xl">
-        <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">Study note PDF</p>
-            <h2 className="mt-1 text-xl font-semibold text-text">{note.title}</h2>
-          </div>
-          <button className="rounded-full border border-white/10 bg-white/5 p-2 text-white transition hover:bg-white/10" onClick={onClose} type="button">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="flex-1 bg-[#080C14] p-4" onContextMenu={(event) => event.preventDefault()}>
-          <iframe
-            className="h-full w-full rounded-2xl border-none"
-            onContextMenu={(event) => event.preventDefault()}
-            src={note.fileUrl}
-            title={note.title}
-            width="100%"
-            height="100%"
-          />
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -166,7 +144,6 @@ export function NotesExplorer({ sampleNotes = defaultSampleNotes }: { sampleNote
   const router = useRouter();
   const pathname = usePathname();
   const [uploadedNotes, setUploadedNotes] = useState<UploadedNoteRecord[]>([]);
-  const [activeNote, setActiveNote] = useState<UploadedNoteRecord | null>(null);
 
   const category = searchParams.get('category') ?? 'all';
   const query = searchParams.get('q') ?? '';
@@ -267,7 +244,7 @@ export function NotesExplorer({ sampleNotes = defaultSampleNotes }: { sampleNote
         ) : (
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {filteredUploadedNotes.map((note) => (
-              <UploadedNoteCard key={note.id} note={note} onViewPdf={setActiveNote} />
+              <UploadedNoteCard key={note.id} note={note} />
             ))}
           </div>
         )}
@@ -289,7 +266,6 @@ export function NotesExplorer({ sampleNotes = defaultSampleNotes }: { sampleNote
         )}
       </section>
 
-      {activeNote ? <PdfModal note={activeNote} onClose={() => setActiveNote(null)} /> : null}
     </div>
   );
 }
