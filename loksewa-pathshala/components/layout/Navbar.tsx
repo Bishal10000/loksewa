@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { Menu, MoonStar, PanelLeftClose, PanelLeftOpen, SunMedium, Languages, ChevronRight } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/components/providers';
@@ -26,6 +26,12 @@ export function Navbar(): JSX.Element {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { locale, setLocale } = useLanguage();
   const { theme, setTheme } = useTheme();
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const groupedExams = useMemo(
     () => ({
@@ -85,7 +91,7 @@ export function Navbar(): JSX.Element {
               size="icon"
               variant="ghost"
             >
-              {theme === 'dark' ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
+              {mounted ? (theme === 'dark' ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />) : <MoonStar className="h-4 w-4" />}
             </Button>
             <Button href="/exams" size="sm">
               Start Preparing
@@ -195,7 +201,7 @@ export function Navbar(): JSX.Element {
                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                   variant="secondary"
                 >
-                  {theme === 'dark' ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
+                  {mounted ? (theme === 'dark' ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />) : <MoonStar className="h-4 w-4" />}
                   Theme
                 </Button>
               </div>
