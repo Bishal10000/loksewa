@@ -155,8 +155,18 @@ export function getNotesByCategory(category?: string): NoteItem[] {
   return category ? notes.filter((note) => note.category === category) : notes;
 }
 
+function doesNoteMatchSlug(note: NoteItem, slug: string): boolean {
+  const normalizedSlug = slugifySegment(slug);
+
+  return (
+    note.slug === slug ||
+    slugifySegment(note.titleEnglish) === normalizedSlug ||
+    slugifySegment(note.titleNepali) === normalizedSlug
+  );
+}
+
 export function getNoteBySlug(slug: string): NoteItem | undefined {
-  return notes.find((note) => note.slug === slug);
+  return notes.find((note) => doesNoteMatchSlug(note, slug));
 }
 
 export function getPrimaryNotePosition(note: Pick<NoteItem, 'applicableExams'>): string {
