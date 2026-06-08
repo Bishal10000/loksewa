@@ -3,15 +3,25 @@ import { notFound } from 'next/navigation';
 import { NoteReader } from '@/components/notes/NoteReader';
 import { UploadedNoteDetail } from '@/components/notes/UploadedNoteDetail';
 import { getExamBySlug } from '@/data/exams';
-import { getNoteByPositionAndSlug, notes } from '@/data/notes';
+import { getNoteByPositionAndSlug, notes, slugifySegment } from '@/data/notes';
 
 export function generateStaticParams(): Array<{ position: string; slug: string }> {
-  return notes.flatMap((note) =>
-    note.applicableExams.map((position) => ({
-      position,
-      slug: note.slug,
-    })),
-  );
+  return notes.flatMap((note) => {
+    const slugCandidates = new Set([
+      note.slug,
+      slugifySegment(note.titleEnglish),
+      slugifySegment(note.titleNepali),
+    ]);
+
+    return note.applicableExams.flatMap((position) =>
+      Array.from(slugCandidates)
+        .filter((slug) => slug.length > 0)
+        .map((slug) => ({
+          position,
+          slug,
+        })),
+    );
+  });
 }
 
 export function generateMetadata({ params }: { params: { position: string; slug: string } }): Metadata {
