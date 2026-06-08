@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { BookOpen, Clock3, Sparkles } from 'lucide-react';
-import { NoteItem, getNotePageHref } from '@/data/notes';
+import { NoteItem } from '@/data/notes';
+import { getSampleNoteRoute } from '@/lib/note-routing';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -11,7 +12,7 @@ const difficultyClass: Record<NoteItem['difficulty'], string> = {
 };
 
 export function NoteCard({ note, isSample = false, position }: { note: NoteItem; isSample?: boolean; position?: string }): JSX.Element {
-  const noteHref = getNotePageHref(note, position);
+  const noteHref = getSampleNoteRoute(note, position);
 
   return (
     <Card className="group h-full rounded-[14px] transition duration-300 hover:-translate-y-1 hover:shadow-glow">
