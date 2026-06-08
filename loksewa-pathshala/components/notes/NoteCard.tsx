@@ -57,15 +57,10 @@ export function NoteCard({ note, isSample = false, position }: { note: NoteItem;
             <BookOpen className="h-4 w-4" />
             Read
           </Link>
-          {isSample ? (
-            <div className="block w-full cursor-not-allowed rounded-[8px] border border-dashed border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] p-2.5 text-center text-[13px] text-[#4B5563]">
-              Coming Soon
-            </div>
-          ) : (
-            <div className="block w-full cursor-not-allowed rounded-[8px] border border-dashed border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] p-2.5 text-center text-[13px] text-[#4B5563]">
-              PDF unavailable
-            </div>
-          )}
+          <Link className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-4 py-2 text-sm font-semibold text-text transition hover:bg-white/12" href={noteHref}>
+            <BookOpen className="h-4 w-4" />
+            View PDF
+          </Link>
         </div>
       </CardContent>
     </Card>
