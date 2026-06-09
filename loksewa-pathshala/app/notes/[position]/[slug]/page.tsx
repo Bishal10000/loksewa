@@ -1,31 +1,32 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { NoteReader } from '@/components/notes/NoteReader';
-import { UploadedNoteDetail } from '@/components/notes/UploadedNoteDetail';
 import { getExamBySlug } from '@/data/exams';
-import { getNoteByPositionAndSlug, notes, slugifySegment } from '@/data/notes';
+import { notes } from '@/data/notes';
+
+function slugifyTitle(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function findStaticNote(position: string, slug: string) {
+  return notes.find((note) => slugifyTitle(note.titleEnglish) === slug && note.applicableExams.includes(position));
+}
 
 export function generateStaticParams(): Array<{ position: string; slug: string }> {
-  return notes.flatMap((note) => {
-    const slugCandidates = new Set([
-      note.slug,
-      slugifySegment(note.titleEnglish),
-      slugifySegment(note.titleNepali),
-    ]);
-
-    return note.applicableExams.flatMap((position) =>
-      Array.from(slugCandidates)
-        .filter((slug) => slug.length > 0)
-        .map((slug) => ({
-          position,
-          slug,
-        })),
-    );
-  });
+  return notes.flatMap((note) =>
+    note.applicableExams.map((position) => ({
+      position,
+      slug: note.slug,
+    })),
+  );
 }
 
 export function generateMetadata({ params }: { params: { position: string; slug: string } }): Metadata {
-  const note = getNoteByPositionAndSlug(params.position, params.slug);
+  const note = findStaticNote(params.position, params.slug);
   const exam = getExamBySlug(params.position);
   const pageUrl = `https://loksewa.qzz.io/notes/${params.position}/${params.slug}`;
 
@@ -65,7 +66,11 @@ export function generateMetadata({ params }: { params: { position: string; slug:
 }
 
 export default function NotePage({ params }: { params: { position: string; slug: string } }): JSX.Element {
-  const note = getNoteByPositionAndSlug(params.position, params.slug);
+  if (!params.position || !params.slug) {
+    notFound();
+  }
+
+  const note = findStaticNote(params.position, params.slug);
 
   if (note) {
     const exam = getExamBySlug(params.position);
@@ -87,9 +92,9 @@ export default function NotePage({ params }: { params: { position: string; slug:
     );
   }
 
-  if (!params.position || !params.slug) {
-    notFound();
-  }
-
-  return <UploadedNoteDetail position={params.position} slug={params.slug} />;
+  return (
+    <div className="rounded-3xl border border-border bg-surface/80 p-6 text-muted">
+      Note not found.
+    </div>
+  );
 }
